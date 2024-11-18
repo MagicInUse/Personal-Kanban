@@ -22,6 +22,11 @@ class AuthService {
     const token = this.getToken();
     return !!token && !this.isTokenExpired(token);
   }
+
+  handleInvalidToken() {
+    // Redirect to the home page
+    window.location.assign('/');
+  }
   
   isTokenExpired(token: string) {
     // TODONE: return a value that indicates if the token is expired
@@ -32,11 +37,13 @@ class AuthService {
       // Check if the decodeed token has an 'exp' (expiration) property and if it is less than the current time in seconds.
       if (decoded?.exp && decoded?.exp * 1000 < Date.now()) {
         // If the token is expired, return true
+        this.handleInvalidToken();
         return true;
       }
     }
     catch (error) {
       // If there is an error decoding the token, return false
+      this.handleInvalidToken();
       return false;
     }
   }
