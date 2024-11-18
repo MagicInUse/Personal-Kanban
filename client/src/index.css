@@ -132,6 +132,16 @@ tbody tr:nth-child(odd) {
   width: 100%;
 }
 
+.filters {
+  display: flex;
+  justify-content: space-around;
+  margin: 1em;
+}
+
+.filters-dropdown {
+  margin-left: 10px;
+}
+
 .board-display {
   display: flex;
 }
@@ -181,8 +191,8 @@ tbody tr:nth-child(odd) {
 
 
 .form {
-  width: 60%;
-  height: 80%;
+  width: 100%;
+  height: 30%;
   background-color: #b864c4;
   margin: auto;
   display: flex;

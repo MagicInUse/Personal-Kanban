@@ -2,10 +2,12 @@ import { useEffect, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { retrieveTickets, deleteTicket } from '../api/ticketAPI';
+import { retrieveUsers } from '../api/userAPI';
 import ErrorPage from './ErrorPage';
 import Swimlane from '../components/Swimlane';
 import { TicketData } from '../interfaces/TicketData';
 import { ApiMessage } from '../interfaces/ApiMessage';
+import { UserData } from '../interfaces/UserData';
 
 import auth from '../utils/auth';
 
@@ -14,12 +16,13 @@ const currentUsername = auth.getProfile()?.username;
 
 const Board = () => {
   const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [error, setError] = useState(false);
   const [loginCheck, setLoginCheck] = useState(false);
   const [filterUsername, setFilterUsername] = useState('');
 
   const checkLogin = () => {
-    if(auth.loggedIn()) {
+    if (auth.loggedIn()) {
       setLoginCheck(true);
     }
   };
@@ -34,7 +37,17 @@ const Board = () => {
     }
   };
 
-  const deleteIndvTicket = async (ticketId: number) : Promise<ApiMessage> => {
+  const fetchUsers = async () => {
+    try {
+      const data = await retrieveUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error('Failed to retrieve users:', err);
+      setError(true);
+    }
+  };
+
+  const deleteIndvTicket = async (ticketId: number): Promise<ApiMessage> => {
     try {
       const data = await deleteTicket(ticketId);
       fetchTickets();
@@ -42,9 +55,9 @@ const Board = () => {
     } catch (err) {
       return Promise.reject(err);
     }
-  }
+  };
 
-  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterUsername(event.target.value);
   };
 
@@ -67,8 +80,9 @@ const Board = () => {
   }, []);
 
   useEffect(() => {
-    if(loginCheck) {
+    if (loginCheck) {
       fetchTickets();
+      fetchUsers();
     }
   }, [loginCheck]);
 
@@ -78,45 +92,45 @@ const Board = () => {
 
   return (
     <>
-    {
-      !loginCheck ? (
+      {!loginCheck ? (
         <div className='login-notice'>
-          <h1>
-            Login to create & view tickets
-          </h1>
-        </div>  
+          <h1>Login to create & view tickets</h1>
+        </div>
       ) : (
-          <div className='board'>
-            <button type='button' id='create-ticket-link'>
-              <Link to='/create' >New Ticket</Link>
-            </button>
-            <div>
+        <div className='board'>
+          <button type='button' id='create-ticket-link'>
+            <Link to='/create'>New Ticket</Link>
+          </button>
+          <div className='filters'>
+            <span>
               <label htmlFor="filterUsername">Filter by Username: </label>
-              <input
-                type="text"
-                id="filterUsername"
-                value={filterUsername}
-                onChange={handleFilterChange}
-                placeholder="Enter username"
-              />
-              <button onClick={() => setFilterUsername(currentUsername || '')}>Show My Tickets</button>
-            </div>
-            <div className='board-display'>
-              {boardStates.map((status) => {
-                const filteredTickets = filteredAndSortedTickets(status);
-                return (
-                  <Swimlane
-                    title={status}
-                    key={status}
-                    tickets={filteredTickets}
-                    deleteTicket={deleteIndvTicket}
-                  />
-                );
-              })}
-            </div>
+              <select className="filters-dropdown" id="filterUsername" value={filterUsername} onChange={handleFilterChange}>
+                <option value="">All Users</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.username ?? ''}>
+                    {user.username}
+                  </option>
+                ))}
+              </select>
+            </span>
+            <button onClick={() => setFilterUsername(currentUsername ?? '')}>Show My Tickets</button>
+            <button onClick={() => setFilterUsername('')}>Show All Tickets</button>
           </div>
-        )
-    }
+          <div className='board-display'>
+            {boardStates.map((status) => {
+              const filteredTickets = filteredAndSortedTickets(status);
+              return (
+                <Swimlane
+                  title={status}
+                  key={status}
+                  tickets={filteredTickets}
+                  deleteTicket={deleteIndvTicket}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </>
   );
 };
