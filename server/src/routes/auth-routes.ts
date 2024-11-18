@@ -25,7 +25,7 @@ export const login = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 
-  const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '5m' });
+  const token = jwt.sign({ username: user.username }, secretKey, { expiresIn: '5m' });
   return res.json({ token });
 };
 

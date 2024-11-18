@@ -9,20 +9,24 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   // TODONE: verify the token exists and add the user data to the request object
   const authHeader = req.headers.authorization;
   
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
-    const secretKey = process.env.JWT_SECRET_KEY;
-
-    jwt.verify(token, secretKey, (err, user) => {
-      if (err) {
-        return res.sendStatus(403); // Forbidden
-      }
-
-      req.user = user as JwtPayload;
-      return next();
-    });
+  if (!authHeader) {
+    return res.sendStatus(401); // Unauthorized
   }
-  else {
-    res.sendStatus(401); // Unauthorized
+
+  const token = authHeader.split(' ')[1];
+  const secretKey = process.env.JWT_SECRET_KEY;
+
+  if (!secretKey) {
+    return res.sendStatus(500); // Internal Server Error
   }
+
+  jwt.verify(token, secretKey, (err, user) => {
+    if (err) {
+      return res.sendStatus(403); // Forbidden
+    }
+
+    req.user = user as JwtPayload;
+    return next();
+  });
+  return;
 };
