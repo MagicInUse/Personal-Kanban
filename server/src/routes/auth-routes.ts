@@ -26,6 +26,7 @@ export const login = async (req: Request, res: Response) => {
   }
 
   const token = jwt.sign({ username: user.username }, secretKey, { expiresIn: '5m' });
+  console.log(`User ${username} logged in at ${new Date()}`);
   return res.json({ token });
 };
 

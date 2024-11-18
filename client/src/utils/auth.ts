@@ -12,7 +12,8 @@ class AuthService {
       }
     }
     catch (error) {
-      return `Failed to get profile: ${error}`;
+      console.error(`Failed to get profile: ${error}`);
+      return null;
     }
     return null;
   }
@@ -24,8 +25,11 @@ class AuthService {
   }
 
   handleInvalidToken() {
-    // Redirect to the home page
-    window.location.assign('/');
+    // Prevent infinite redirects by checking if already on the home page
+    if (window.location.pathname !== '/') {
+      // Redirect to the home page
+      window.location.assign('/');
+    }
   }
   
   isTokenExpired(token: string) {
@@ -44,8 +48,9 @@ class AuthService {
     catch (error) {
       // If there is an error decoding the token, return false
       this.handleInvalidToken();
-      return false;
+      return true;
     }
+    return false;
   }
 
   getToken(): string {
@@ -60,7 +65,8 @@ class AuthService {
     }
     catch (error) {
       // If there is an error, return an empty string
-      return `Failed to get token from localStorage: ${error}`;
+      console.error('Failed to get token from localStorage:', error);
+      return '';
     }
     return '';
   }

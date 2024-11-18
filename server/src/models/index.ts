@@ -5,6 +5,7 @@ import { Sequelize } from 'sequelize';
 import { UserFactory } from './user.js';
 import { TicketFactory } from './ticket.js';
 
+// Check .env imports processed correctly
 if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_HOST || !process.env.DB_PORT) {
   throw new Error('Database configuration is missing');
 }
@@ -17,7 +18,8 @@ const sequelize = process.env.DB_URL
       dialectOptions: {
         decimalNumbers: true,
       },
-      logging: console.log,
+      // For help w/ database debugging
+      // logging: console.log,
     });
 
 const User = UserFactory(sequelize);

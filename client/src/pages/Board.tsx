@@ -10,11 +10,13 @@ import { ApiMessage } from '../interfaces/ApiMessage';
 import auth from '../utils/auth';
 
 const boardStates = ['Todo', 'In Progress', 'Done'];
+const currentUsername = auth.getProfile()?.username;
 
 const Board = () => {
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [error, setError] = useState(false);
   const [loginCheck, setLoginCheck] = useState(false);
+  const [filterUsername, setFilterUsername] = useState('');
 
   const checkLogin = () => {
     if(auth.loggedIn()) {
@@ -41,6 +43,24 @@ const Board = () => {
       return Promise.reject(err);
     }
   }
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterUsername(event.target.value);
+  };
+
+  const filteredAndSortedTickets = (status: string) => {
+    let filteredTickets = tickets.filter(ticket => ticket.status === status);
+
+    // Apply filter by username
+    if (filterUsername) {
+      filteredTickets = filteredTickets.filter(ticket => ticket.assignedUser?.username === filterUsername);
+    }
+
+    // Sort tickets by username
+    filteredTickets.sort((a, b) => (a.assignedUser?.username || '').localeCompare(b.assignedUser?.username || ''));
+
+    return filteredTickets;
+  };
 
   useLayoutEffect(() => {
     checkLogin();
@@ -70,14 +90,25 @@ const Board = () => {
             <button type='button' id='create-ticket-link'>
               <Link to='/create' >New Ticket</Link>
             </button>
+            <div>
+              <label htmlFor="filterUsername">Filter by Username: </label>
+              <input
+                type="text"
+                id="filterUsername"
+                value={filterUsername}
+                onChange={handleFilterChange}
+                placeholder="Enter username"
+              />
+              <button onClick={() => setFilterUsername(currentUsername || '')}>Show My Tickets</button>
+            </div>
             <div className='board-display'>
               {boardStates.map((status) => {
-                const filteredTickets = tickets.filter(ticket => ticket.status === status);
+                const filteredTickets = filteredAndSortedTickets(status);
                 return (
-                  <Swimlane 
-                    title={status} 
-                    key={status} 
-                    tickets={filteredTickets} 
+                  <Swimlane
+                    title={status}
+                    key={status}
+                    tickets={filteredTickets}
                     deleteTicket={deleteIndvTicket}
                   />
                 );
