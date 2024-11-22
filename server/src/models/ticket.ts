@@ -54,6 +54,7 @@ export function TicketFactory(sequelize: Sequelize): typeof Ticket {
       tableName: 'tickets',
       sequelize,
       timestamps: true,
+      underscored: true,
     }
   );
 
